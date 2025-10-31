@@ -68,7 +68,7 @@
             font-size: 0.9rem;
         }
         
-        .login-form input {
+        .login-form input, .login-form select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -673,6 +673,13 @@
         <div class="login-form">
             <h2><i class="fas fa-lock"></i> تسجيل الدخول</h2>
             <div class="form-group">
+                <label for="location">اختر الموقع</label>
+                <select id="location">
+                    <option value="zawia">بئر الزاوية</option>
+                    <option value="aghiga">بئر أغيغة</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="username">اسم المستخدم</label>
                 <input type="text" id="username" placeholder="أدخل اسم المستخدم">
             </div>
@@ -681,11 +688,6 @@
                 <input type="password" id="password" placeholder="أدخل كلمة المرور">
             </div>
             <button id="login-btn">تسجيل الدخول</button>
-            <div style="margin-top: 15px; text-align: center; font-size: 0.8rem; color: #666;">
-                <p>مستخدمين تجريبيين:</p>
-                <p>Abdelhad El ahari</p>
-                <p>Année 2025</p>
-            </div>
         </div>
     </div>
 
@@ -695,7 +697,7 @@
                 <div class="header-content">
                     <div class="logo">
                         <span class="logo-icon"><i class="fas fa-water"></i></span>
-                        <h1>بئر الزاوية</h1>
+                        <h1 id="site-title">بئر الزاوية</h1>
                     </div>
                     <div class="user-info">
                         <div class="date-display" id="current-date"></div>
@@ -938,6 +940,7 @@
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let annualYear = new Date().getFullYear();
+        let currentLocation = "zawia"; // الموقع الافتراضي
 
         // عناصر DOM
         const loginPage = document.getElementById('login-page');
@@ -946,6 +949,8 @@
         const logoutBtn = document.getElementById('logout-btn');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const locationSelect = document.getElementById('location');
+        const siteTitle = document.getElementById('site-title');
         const currentDateElement = document.getElementById('current-date');
         const totalHoursElement = document.getElementById('total-hours');
         const totalAmountElement = document.getElementById('total-amount');
@@ -985,10 +990,17 @@
         function login() {
             const username = usernameInput.value;
             const password = passwordInput.value;
+            const location = locationSelect.value;
             
             if (users[username] && users[username] === password) {
                 localStorage.setItem('loggedIn', 'true');
                 localStorage.setItem('username', username);
+                localStorage.setItem('location', location);
+                currentLocation = location;
+                
+                // تحديث عنوان الموقع
+                updateSiteTitle();
+                
                 loginPage.classList.add('hidden');
                 appContent.classList.remove('hidden');
                 initApp();
@@ -997,14 +1009,26 @@
             }
         }
 
+        // تحديث عنوان الموقع
+        function updateSiteTitle() {
+            const location = localStorage.getItem('location') || 'zawia';
+            if (location === 'zawia') {
+                siteTitle.textContent = 'بئر الزاوية';
+            } else if (location === 'aghiga') {
+                siteTitle.textContent = 'بئر أغيغة';
+            }
+        }
+
         // تسجيل الخروج
         function logout() {
             localStorage.removeItem('loggedIn');
             localStorage.removeItem('username');
+            localStorage.removeItem('location');
             loginPage.classList.remove('hidden');
             appContent.classList.add('hidden');
             usernameInput.value = '';
             passwordInput.value = '';
+            locationSelect.value = 'zawia';
         }
 
         // التنقل بين الأقسام
@@ -1085,128 +1109,14 @@
             const start = new Date(`2000-01-01T${startTime}`);
             const end = new Date(`2000-01-01T${endTime}`);
             
-            // إذا كانت ساعة النهاية قبل ساعة البداية، نفترض أن اليوم التالي
+            // إذا كانت ساعة النهاية قبل ساعة البداية، نضيف 24 ساعة للنهاية
             if (end < start) {
-                end.setDate(end.getDate() + 1);
+                end.setHours(end.getHours() + 24);
             }
             
-            const durationMs = end - start;
-            return (durationMs / (1000 * 60 * 60)).toFixed(2);
-        }
-
-        // حساب المبلغ
-        function calculateAmount(duration, rate) {
-            return (duration * rate).toFixed(2);
-        }
-
-        // حساب حصة المالك (2/3)
-        function calculateOwnerShare(amount) {
-            return ((amount * 2) / 3).toFixed(2);
-        }
-
-        // حساب حصة العامل (1/3)
-        function calculateWorkerShare(amount) {
-            return (amount / 3).toFixed(2);
-        }
-
-        // تصفية المستفيدين حسب الشهر والسنة
-        function filterBeneficiariesByMonthYear(month, year) {
-            return beneficiaries.filter(beneficiary => {
-                const beneficiaryDate = new Date(beneficiary.date);
-                return beneficiaryDate.getMonth() === month && beneficiaryDate.getFullYear() === year;
-            });
-        }
-
-        // تحديث الإحصائيات
-        function updateStatistics() {
-            const filteredBeneficiaries = filterBeneficiariesByMonthYear(currentMonth, currentYear);
-            
-            const totalHours = filteredBeneficiaries.reduce((sum, beneficiary) => {
-                return sum + parseFloat(beneficiary.duration);
-            }, 0);
-            
-            const totalAmount = filteredBeneficiaries.reduce((sum, beneficiary) => {
-                return sum + parseFloat(beneficiary.amount);
-            }, 0);
-            
-            const ownerShare = filteredBeneficiaries.reduce((sum, beneficiary) => {
-                return sum + parseFloat(beneficiary.ownerShare);
-            }, 0);
-            
-            const totalTransferred = transferDates.reduce((sum, transfer) => {
-                return sum + parseFloat(transfer.amount);
-            }, 0);
-            
-            const netOwner = totalTransferred;
-            
-            totalHoursElement.textContent = totalHours.toFixed(2);
-            totalAmountElement.textContent = `${totalAmount.toFixed(2)} د.ج`;
-            ownerShareElement.textContent = `${ownerShare.toFixed(2)} د.ج`;
-            netOwnerElement.textContent = `${netOwner.toFixed(2)} د.ج`;
-            
-            // تحديث حساب العامل
-            updateWorkerCalculation();
-        }
-
-        // تحديث حساب العامل
-        function updateWorkerCalculation() {
-            const filteredBeneficiaries = filterBeneficiariesByMonthYear(currentMonth, currentYear);
-            
-            const totalAmount = filteredBeneficiaries.reduce((sum, beneficiary) => {
-                return sum + parseFloat(beneficiary.amount);
-            }, 0);
-            
-            const ownerShare = ((totalAmount * 2) / 3).toFixed(2);
-            const workerShare = (totalAmount / 3).toFixed(2);
-            
-            totalAmountWorkerElement.textContent = `${totalAmount.toFixed(2)} د.ج`;
-            ownerShareDetailElement.textContent = `${ownerShare} د.ج`;
-            workerShareDetailElement.textContent = `${workerShare} د.ج`;
-            
-            // تحديث المبلغ المتبقي
-            updateRemainingAmount();
-        }
-
-        // تحديث المبلغ المتبقي
-        function updateRemainingAmount() {
-            const ownerShare = parseFloat(ownerShareDetailElement.textContent);
-            const totalTransferred = transferDates.reduce((sum, transfer) => {
-                return sum + parseFloat(transfer.amount);
-            }, 0);
-            
-            const remainingAmount = ownerShare - totalTransferred;
-            remainingAmountInput.value = remainingAmount.toFixed(2);
-        }
-
-        // عرض المستفيدين
-        function renderBeneficiaries() {
-            beneficiariesList.innerHTML = '';
-            
-            const filteredBeneficiaries = filterBeneficiariesByMonthYear(currentMonth, currentYear);
-            
-            filteredBeneficiaries.forEach((beneficiary, index) => {
-                const row = document.createElement('tr');
-                
-                row.innerHTML = `
-                    <td>${beneficiary.date}</td>
-                    <td>${beneficiary.name}</td>
-                    <td>${beneficiary.startTime}</td>
-                    <td>${beneficiary.endTime}</td>
-                    <td>${beneficiary.duration}</td>
-                    <td>${beneficiary.rate} د.ج</td>
-                    <td>${beneficiary.amount} د.ج</td>
-                    <td>
-                        <div class="actions">
-                            <button class="action-btn btn-warning" onclick="editBeneficiary(${index})"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn btn-danger" onclick="deleteBeneficiary(${index})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>
-                `;
-                
-                beneficiariesList.appendChild(row);
-            });
-            
-            updateStatistics();
+            const diffMs = end - start;
+            const diffHours = diffMs / (1000 * 60 * 60);
+            return diffHours;
         }
 
         // إضافة مستفيد جديد
@@ -1219,102 +1129,283 @@
             const endTime = endTimeSelect.value;
             const rate = parseFloat(document.getElementById('hourly-rate').value);
             
-            if (!name || !date || !startTime || !endTime) {
-                alert('يرجى ملء جميع الحقول المطلوبة');
-                return;
-            }
-            
             const duration = calculateDuration(startTime, endTime);
-            const amount = calculateAmount(duration, rate);
-            const ownerShare = calculateOwnerShare(amount);
-            const workerShare = calculateWorkerShare(amount);
+            const amount = duration * rate;
             
             const beneficiary = {
-                date,
+                id: Date.now(),
                 name,
+                date,
                 startTime,
                 endTime,
-                duration,
                 rate,
-                amount,
-                ownerShare,
-                workerShare
+                duration,
+                amount
             };
             
             beneficiaries.push(beneficiary);
             localStorage.setItem('beneficiaries', JSON.stringify(beneficiaries));
             
-            beneficiaryForm.reset();
-            document.getElementById('beneficiary-date').valueAsDate = new Date();
-            document.getElementById('hourly-rate').value = hourlyRate;
+            updateBeneficiariesList();
+            updateSummary();
+            
+            // إعادة تعيين النموذج
+            document.getElementById('beneficiary-name').value = '';
+            document.getElementById('beneficiary-date').value = '';
             startTimeSelect.value = '08:00';
             endTimeSelect.value = '12:00';
-            
-            renderBeneficiaries();
-            updateAnnualStatistics();
+            document.getElementById('hourly-rate').value = hourlyRate;
         }
 
-        // تعديل مستفيد
-        function editBeneficiary(index) {
-            const beneficiary = beneficiaries[index];
+        // تحديث قائمة المستفيدين
+        function updateBeneficiariesList() {
+            beneficiariesList.innerHTML = '';
             
-            document.getElementById('beneficiary-name').value = beneficiary.name;
-            document.getElementById('beneficiary-date').value = beneficiary.date;
-            startTimeSelect.value = beneficiary.startTime;
-            endTimeSelect.value = beneficiary.endTime;
-            document.getElementById('hourly-rate').value = beneficiary.rate;
+            // فلترة المستفيدين حسب الشهر والسنة المحددين
+            const filteredBeneficiaries = beneficiaries.filter(beneficiary => {
+                const beneficiaryDate = new Date(beneficiary.date);
+                return beneficiaryDate.getMonth() === currentMonth && 
+                       beneficiaryDate.getFullYear() === currentYear;
+            });
             
-            // حذف السجل القديم
-            deleteBeneficiary(index);
+            if (filteredBeneficiaries.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" style="text-align: center;">لا توجد بيانات</td>`;
+                beneficiariesList.appendChild(row);
+                return;
+            }
+            
+            filteredBeneficiaries.forEach(beneficiary => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${beneficiary.date}</td>
+                    <td>${beneficiary.name}</td>
+                    <td>${beneficiary.startTime}</td>
+                    <td>${beneficiary.endTime}</td>
+                    <td>${beneficiary.duration.toFixed(2)} ساعة</td>
+                    <td>${beneficiary.rate.toFixed(2)} د.ج</td>
+                    <td>${beneficiary.amount.toFixed(2)} د.ج</td>
+                    <td class="actions">
+                        <button class="action-btn btn-danger delete-beneficiary" data-id="${beneficiary.id}">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </td>
+                `;
+                beneficiariesList.appendChild(row);
+            });
+            
+            // إضافة مستمعي الأحداث لأزرار الحذف
+            document.querySelectorAll('.delete-beneficiary').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteBeneficiary(id);
+                });
+            });
         }
 
         // حذف مستفيد
-        function deleteBeneficiary(index) {
+        function deleteBeneficiary(id) {
             if (confirm('هل أنت متأكد من حذف هذا المستفيد؟')) {
-                beneficiaries.splice(index, 1);
+                beneficiaries = beneficiaries.filter(beneficiary => beneficiary.id !== id);
                 localStorage.setItem('beneficiaries', JSON.stringify(beneficiaries));
-                renderBeneficiaries();
-                updateAnnualStatistics();
+                updateBeneficiariesList();
+                updateSummary();
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateSummary() {
+            // فلترة المستفيدين حسب الشهر والسنة المحددين
+            const filteredBeneficiaries = beneficiaries.filter(beneficiary => {
+                const beneficiaryDate = new Date(beneficiary.date);
+                return beneficiaryDate.getMonth() === currentMonth && 
+                       beneficiaryDate.getFullYear() === currentYear;
+            });
+            
+            // حساب الإجماليات
+            const totalHours = filteredBeneficiaries.reduce((sum, beneficiary) => sum + beneficiary.duration, 0);
+            const totalAmount = filteredBeneficiaries.reduce((sum, beneficiary) => sum + beneficiary.amount, 0);
+            
+            // حساب حصة المالك والعامل (2/3 للمالك، 1/3 للعامل)
+            const ownerShare = totalAmount * (2/3);
+            const workerShare = totalAmount * (1/3);
+            
+            // حساب المبالغ المحولة للعامل
+            const totalTransferred = transferDates.reduce((sum, transfer) => {
+                const transferDate = new Date(transfer.date);
+                if (transferDate.getMonth() === currentMonth && transferDate.getFullYear() === currentYear) {
+                    return sum + transfer.amount;
+                }
+                return sum;
+            }, 0);
+            
+            // صافي المبلغ للمالك
+            const netOwner = ownerShare - totalTransferred;
+            
+            // تحديث العناصر في الصفحة
+            totalHoursElement.textContent = totalHours.toFixed(2);
+            totalAmountElement.textContent = totalAmount.toFixed(2) + ' د.ج';
+            ownerShareElement.textContent = ownerShare.toFixed(2) + ' د.ج';
+            netOwnerElement.textContent = netOwner.toFixed(2) + ' د.ج';
+            
+            // تحديث قسم العامل
+            totalAmountWorkerElement.textContent = totalAmount.toFixed(2) + ' د.ج';
+            ownerShareDetailElement.textContent = ownerShare.toFixed(2) + ' د.ج';
+            workerShareDetailElement.textContent = workerShare.toFixed(2) + ' د.ج';
+            
+            // تحديث المبلغ المتبقي
+            remainingAmountInput.value = (ownerShare - totalTransferred).toFixed(2);
+        }
+
+        // تحديث قائمة أيام التحويل
+        function updateTransferList() {
+            transferListElement.innerHTML = '';
+            
+            // فلترة التحويلات حسب الشهر والسنة المحددين
+            const filteredTransfers = transferDates.filter(transfer => {
+                const transferDate = new Date(transfer.date);
+                return transferDate.getMonth() === currentMonth && 
+                       transferDate.getFullYear() === currentYear;
+            });
+            
+            if (filteredTransfers.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'لا توجد تحويلات مسجلة لهذا الشهر';
+                transferListElement.appendChild(li);
+                return;
+            }
+            
+            filteredTransfers.forEach(transfer => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${transfer.date}</span>
+                    <span class="transfer-amount">${transfer.amount.toFixed(2)} د.ج</span>
+                    <span class="transfer-remaining">${transfer.remaining.toFixed(2)} د.ج</span>
+                    <button class="action-btn btn-danger delete-transfer" data-id="${transfer.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                transferListElement.appendChild(li);
+            });
+            
+            // إضافة مستمعي الأحداث لأزرار الحذف
+            document.querySelectorAll('.delete-transfer').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteTransfer(id);
+                });
+            });
+        }
+
+        // إضافة تاريخ تحويل
+        function addTransferDate() {
+            const date = transferDateInput.value;
+            const amount = parseFloat(transferAmountInput.value);
+            
+            if (!date || isNaN(amount) || amount <= 0) {
+                alert('يرجى إدخال تاريخ ومبلغ صالحين');
+                return;
+            }
+            
+            // حساب المبلغ المتبقي
+            const filteredBeneficiaries = beneficiaries.filter(beneficiary => {
+                const beneficiaryDate = new Date(beneficiary.date);
+                return beneficiaryDate.getMonth() === currentMonth && 
+                       beneficiaryDate.getFullYear() === currentYear;
+            });
+            
+            const totalAmount = filteredBeneficiaries.reduce((sum, beneficiary) => sum + beneficiary.amount, 0);
+            const ownerShare = totalAmount * (2/3);
+            
+            // حساب إجمالي المبالغ المحولة حتى الآن
+            const totalTransferred = transferDates.reduce((sum, transfer) => {
+                const transferDate = new Date(transfer.date);
+                if (transferDate.getMonth() === currentMonth && transferDate.getFullYear() === currentYear) {
+                    return sum + transfer.amount;
+                }
+                return sum;
+            }, 0);
+            
+            const remaining = ownerShare - totalTransferred - amount;
+            
+            if (remaining < 0) {
+                alert('المبلغ المدخل أكبر من المبلغ المتبقي');
+                return;
+            }
+            
+            const transfer = {
+                id: Date.now(),
+                date,
+                amount,
+                remaining
+            };
+            
+            transferDates.push(transfer);
+            localStorage.setItem('transferDates', JSON.stringify(transferDates));
+            
+            updateTransferList();
+            updateSummary();
+            
+            // إعادة تعيين الحقول
+            transferDateInput.value = '';
+            transferAmountInput.value = '';
+        }
+
+        // حذف تحويل
+        function deleteTransfer(id) {
+            if (confirm('هل أنت متأكد من حذف هذا التحويل؟')) {
+                transferDates = transferDates.filter(transfer => transfer.id !== id);
+                localStorage.setItem('transferDates', JSON.stringify(transferDates));
+                updateTransferList();
+                updateSummary();
             }
         }
 
         // تحديث الإحصائيات السنوية
-        function updateAnnualStatistics() {
+        function updateAnnualSummary() {
             monthlySummaryElement.innerHTML = '';
             
-            const year = parseInt(annualYearSelect.value);
-            const monthNames = [
-                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-            ];
-            
             for (let month = 0; month < 12; month++) {
-                const monthlyBeneficiaries = beneficiaries.filter(beneficiary => {
+                // فلترة المستفيدين حسب الشهر والسنة المحددين
+                const filteredBeneficiaries = beneficiaries.filter(beneficiary => {
                     const beneficiaryDate = new Date(beneficiary.date);
-                    return beneficiaryDate.getMonth() === month && beneficiaryDate.getFullYear() === year;
+                    return beneficiaryDate.getMonth() === month && 
+                           beneficiaryDate.getFullYear() === annualYear;
                 });
                 
-                const totalHours = monthlyBeneficiaries.reduce((sum, beneficiary) => {
-                    return sum + parseFloat(beneficiary.duration);
+                // حساب الإجماليات
+                const totalHours = filteredBeneficiaries.reduce((sum, beneficiary) => sum + beneficiary.duration, 0);
+                const totalAmount = filteredBeneficiaries.reduce((sum, beneficiary) => sum + beneficiary.amount, 0);
+                
+                // حساب حصة المالك والعامل
+                const ownerShare = totalAmount * (2/3);
+                const workerShare = totalAmount * (1/3);
+                
+                // حساب المبالغ المحولة للعامل
+                const totalTransferred = transferDates.reduce((sum, transfer) => {
+                    const transferDate = new Date(transfer.date);
+                    if (transferDate.getMonth() === month && transferDate.getFullYear() === annualYear) {
+                        return sum + transfer.amount;
+                    }
+                    return sum;
                 }, 0);
                 
-                const totalAmount = monthlyBeneficiaries.reduce((sum, beneficiary) => {
-                    return sum + parseFloat(beneficiary.amount);
-                }, 0);
+                // صافي المبلغ للمالك
+                const netOwner = ownerShare - totalTransferred;
                 
-                const ownerShare = monthlyBeneficiaries.reduce((sum, beneficiary) => {
-                    return sum + parseFloat(beneficiary.ownerShare);
-                }, 0);
+                const monthNames = [
+                    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+                ];
                 
                 const monthCard = document.createElement('div');
                 monthCard.className = 'month-card';
                 monthCard.innerHTML = `
                     <h4>${monthNames[month]}</h4>
                     <div class="month-stats">
-                        <div>${monthlyBeneficiaries.length} مستفيد</div>
                         <div>${totalHours.toFixed(1)} ساعة</div>
                         <div>${totalAmount.toFixed(0)} د.ج</div>
-                        <div style="color: var(--success-color);">${ownerShare.toFixed(0)} د.ج للمالك</div>
+                        <div>${netOwner.toFixed(0)} د.ج</div>
                     </div>
                 `;
                 
@@ -1322,122 +1413,69 @@
             }
         }
 
-        // عرض أيام التحويل
-        function renderTransferDates() {
-            transferListElement.innerHTML = '';
-            
-            // ترتيب التواريخ من الأحدث إلى الأقدم
-            const sortedDates = [...transferDates].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedDates.forEach((transfer, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${transfer.date}</span>
-                    <span class="transfer-amount">${transfer.amount} د.ج</span>
-                    <span class="transfer-remaining">${transfer.remaining} د.ج</span>
-                    <button class="action-btn btn-danger" onclick="deleteTransferDate(${index})"><i class="fas fa-trash"></i></button>
-                `;
-                transferListElement.appendChild(li);
-            });
-            
-            updateRemainingAmount();
-        }
-
-        // إضافة يوم تحويل جديد
-        function addTransferDate() {
-            const date = transferDateInput.value;
-            const amount = parseFloat(transferAmountInput.value);
-            
-            if (!date) {
-                alert('يرجى اختيار تاريخ الاستلام');
-                return;
-            }
-            
-            if (!amount || amount <= 0) {
-                alert('يرجى إدخال مبلغ استلام صحيح');
-                return;
-            }
-            
-            const ownerShare = parseFloat(ownerShareDetailElement.textContent);
-            const totalTransferred = transferDates.reduce((sum, transfer) => {
-                return sum + parseFloat(transfer.amount);
-            }, 0);
-            
-            const remainingAmount = ownerShare - totalTransferred - amount;
-            
-            if (remainingAmount < 0) {
-                alert('مبلغ الاستلام أكبر من المبلغ المتبقي');
-                return;
-            }
-            
-            const transfer = {
-                date,
-                amount: amount.toFixed(2),
-                remaining: remainingAmount.toFixed(2)
-            };
-            
-            transferDates.push(transfer);
-            localStorage.setItem('transferDates', JSON.stringify(transferDates));
-            renderTransferDates();
-            
-            // إعادة تعيين الحقول
-            transferDateInput.value = '';
-            transferAmountInput.value = '';
-        }
-
-        // حذف يوم تحويل
-        function deleteTransferDate(index) {
-            if (confirm('هل أنت متأكد من حذف هذا الاستلام؟')) {
-                transferDates.splice(index, 1);
-                localStorage.setItem('transferDates', JSON.stringify(transferDates));
-                renderTransferDates();
-            }
-        }
-
-        // تطبيق التصفية
-        function applyFilter() {
+        // تطبيق الفلاتر
+        function applyFilters() {
             currentMonth = parseInt(monthSelect.value);
             currentYear = parseInt(yearSelect.value);
-            renderBeneficiaries();
+            updateBeneficiariesList();
+            updateSummary();
+            updateTransferList();
+        }
+
+        // تطبيق الفلاتر السنوية
+        function applyAnnualFilters() {
+            annualYear = parseInt(annualYearSelect.value);
+            updateAnnualSummary();
         }
 
         // تهيئة التطبيق
         function initApp() {
+            updateSiteTitle();
             updateCurrentDate();
-            initializeYearSelects();
             generateTimeOptions();
+            initializeYearSelects();
+            updateBeneficiariesList();
+            updateSummary();
+            updateTransferList();
+            updateAnnualSummary();
             setupNavigation();
-            renderBeneficiaries();
-            updateAnnualStatistics();
-            renderTransferDates();
             
-            // تعيين تاريخ اليوم كتاريخ افتراضي
-            document.getElementById('beneficiary-date').valueAsDate = new Date();
-            transferDateInput.valueAsDate = new Date();
+            // تعيين التاريخ الحالي كافتراضي في نموذج إضافة المستفيد
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('beneficiary-date').value = today;
+            transferDateInput.value = today;
             
-            // إضافة مستمعي الأحداث
-            beneficiaryForm.addEventListener('submit', addBeneficiary);
-            applyFilterButton.addEventListener('click', applyFilter);
-            annualYearSelect.addEventListener('change', updateAnnualStatistics);
-            addTransferDateButton.addEventListener('click', addTransferDate);
+            // تحديث التاريخ كل دقيقة
+            setInterval(updateCurrentDate, 60000);
         }
 
-        // بدء التطبيق عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            checkLogin();
-            
-            // إضافة مستمعي الأحداث للنظام الأمني
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
             loginBtn.addEventListener('click', login);
             logoutBtn.addEventListener('click', logout);
+            beneficiaryForm.addEventListener('submit', addBeneficiary);
+            applyFilterButton.addEventListener('click', applyFilters);
+            addTransferDateButton.addEventListener('click', addTransferDate);
+            annualYearSelect.addEventListener('change', applyAnnualFilters);
             
             // السماح بتسجيل الدخول بالضغط على Enter
-            passwordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
+            passwordInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
                     login();
                 }
             });
+            
+            // تحديث الموقع عند التغيير
+            locationSelect.addEventListener('change', function() {
+                currentLocation = this.value;
+            });
+        }
+
+        // تهيئة التطبيق عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkLogin();
         });
     </script>
 </body>
-
 </html>
