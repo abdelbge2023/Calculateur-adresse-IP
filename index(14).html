@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur Réseau IP Complet - Outil Pédagogique</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --info-color: #17a2b8;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --network-color: #2980b9;
+            --subnet-color: #e67e22;
+            --host-color: #2ecc71;
+            --broadcast-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: var(--primary-color);
+            padding: 2rem 0;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--dark-color);
+            opacity: 0.9;
+        }
+        
+        .tabs-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .tabs {
+            display: flex;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1.2rem 2rem;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 3px solid white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 2rem;
+        }
+        
+        .card-title {
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .card-title i {
+            color: var(--secondary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            background: white;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--secondary-color), var(--network-color));
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-large {
+            width: 100%;
+            justify-content: center;
+            padding: 1.25rem 2rem;
+            font-size: 1.2rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--secondary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .result-card.network { border-left-color: var(--network-color); }
+        .result-card.subnet { border-left-color: var(--subnet-color); }
+        .result-card.host { border-left-color: var(--host-color); }
+        .result-card.broadcast { border-left-color: var(--broadcast-color); }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+        }
+        
+        .result-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+        
+        .binary-section {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .binary-line {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .calculation-steps {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--info-color);
+        }
+        
+        .step {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: var(--info-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 1rem;
+            font-weight: bold;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .tool-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .tool-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+        
+        .tool-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .example-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .example-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .example-ip {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .example-desc {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .ip-display {
+            font-family: 'Courier New', monospace;
+            background: var(--dark-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-table th {
+            background: linear-gradient(135deg, var(--secondary-color), var(--network-color));
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .results-table td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1rem;
+        }
+        
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .vlsm-subnet {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            align-items: center;
+        }
+        
+        .vlsm-subnet input {
+            flex: 1;
+        }
+        
+        .converter-tool {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .converter-result {
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .vlsm-subnet {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-network-wired"></i> Calculateur Réseau IP Complet</h1>
+            <p class="subtitle">Outil pédagogique professionnel pour l'analyse des réseaux IP</p>
+        </header>
+        
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="cidr-calculator">Calculateur CIDR</div>
+                <div class="tab" data-tab="subnet-calculator">Sous-Réseaux</div>
+                <div class="tab" data-tab="vlsm-calculator">VLSM</div>
+                <div class="tab" data-tab="tools">Outils</div>
+            </div>
+            
+            <!-- Calculateur CIDR -->
+            <div class="tab-content active" id="cidr-calculator">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-calculator"></i> Calculateur CIDR - Adresse Réseau et Broadcast</h2>
+                    
+                    <div class="form-group">
+                        <label for="cidr-input"><i class="fas fa-network-wired"></i> Adresse IP avec CIDR</label>
+                        <input type="text" id="cidr-input" placeholder="Ex: 192.168.100.25/28" value="192.168.100.25/28">
+                    </div>
+                    
+                    <button id="calculate-cidr" class="btn btn-success btn-large">
+                        <i class="fas fa-bolt"></i> Calculer les Informations Réseau
+                    </button>
+                    
+                    <div class="tools-grid">
+                        <div class="tool-card" onclick="loadCIDRExample('192.168.100.25/28')">
+                            <div class="tool-icon"><i class="fas fa-network-wired"></i></div>
+                            <div class="tool-title">Exemple /28</div>
+                            <div class="example-desc">14 hôtes, masque 255.255.255.240</div>
+                        </div>
+                        
+                        <div class="tool-card" onclick="loadCIDRExample('10.1.113.75/19')">
+                            <div class="tool-icon"><i class="fas fa-sitemap"></i></div>
+                            <div class="tool-title">Exemple /19</div>
+                            <div class="example-desc">8190 hôtes, masque 255.255.224.0</div>
+                        </div>
+                        
+                        <div class="tool-card" onclick="clearCIDRFields()">
+                            <div class="tool-icon"><i class="fas fa-broom"></i></div>
+                            <div class="tool-title">Nettoyer</div>
+                            <div class="example-desc">Effacer les champs</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Résultats du Calcul CIDR</h2>
+                    
+                    <div id="cidr-results-placeholder">
+                        <div style="text-align: center; padding: 3rem; color: #7f8c8d;">
+                            <i class="fas fa-network-wired" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Les résultats s'afficheront ici après calcul</p>
+                        </div>
+                    </div>
+                    
+                    <div id="cidr-results-container" style="display: none;">
+                        <div class="results-grid">
+                            <div class="result-card network">
+                                <div class="result-label">Adresse Réseau</div>
+                                <div class="result-value" id="network-address">-</div>
+                                <div class="result-label">Première adresse du sous-réseau</div>
+                            </div>
+                            
+                            <div class="result-card broadcast">
+                                <div class="result-label">Adresse Broadcast</div>
+                                <div class="result-value" id="broadcast-address">-</div>
+                                <div class="result-label">Dernière adresse du sous-réseau</div>
+                            </div>
+                            
+                            <div class="result-card subnet">
+                                <div class="result-label">Bits d'Hôte</div>
+                                <div class="result-value" id="host-bits">-</div>
+                                <div class="result-label">Bits disponibles pour les hôtes</div>
+                            </div>
+                            
+                            <div class="result-card host">
+                                <div class="result-label">Hôtes Utilisables</div>
+                                <div class="result-value" id="total-hosts">-</div>
+                                <div class="result-label">Nombre total d'hôtes - 2</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ip-display">
+                            Plage d'adresses utilisables: <span id="first-host">-</span> - <span id="last-host">-</span>
+                        </div>
+                        
+                        <div class="binary-section">
+                            <div class="binary-line" id="binary-ip">Adresse IP: </div>
+                            <div class="binary-line" id="binary-mask">Masque: </div>
+                            <div class="binary-line" id="binary-network">Réseau: </div>
+                            <div class="binary-line" id="binary-broadcast">Broadcast: </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-list-ol"></i> Étapes de Calcul CIDR</h2>
+                    <div id="cidr-calculation-steps">
+                        <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                            <i class="fas fa-cogs" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Les étapes de calcul s'afficheront ici</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calculateur de Sous-Réseaux -->
+            <div class="tab-content" id="subnet-calculator">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-cogs"></i> Calculateur de Sous-Réseaux</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ip-address"><i class="fas fa-laptop"></i> Adresse IP d'hôte</label>
+                            <input type="text" id="ip-address" placeholder="Ex: 172.22.32.12" value="172.22.32.12">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="initial-mask"><i class="fas fa-mask"></i> Masque de sous-réseau initial</label>
+                            <input type="text" id="initial-mask" placeholder="Ex: 255.255.0.0" value="255.255.0.0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-mask"><i class="fas fa-exchange-alt"></i> Nouveau masque de sous-réseau</label>
+                            <input type="text" id="new-mask" placeholder="Ex: 255.255.224.0" value="255.255.224.0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="opacity: 0;">Espace</label>
+                            <button id="calculate-subnet" class="btn btn-success btn-large">
+                                <i class="fas fa-bolt"></i> Calculer le Sous-Réseau
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="examples-grid">
+                        <div class="example-card" onclick="loadSubnetExample('172.22.32.12', '255.255.0.0', '255.255.224.0')">
+                            <div class="example-ip">172.22.32.12/19</div>
+                            <div class="example-desc">Exemple avec masque 255.255.224.0</div>
+                        </div>
+                        <div class="example-card" onclick="loadSubnetExample('192.168.1.100', '255.255.255.0', '255.255.255.192')">
+                            <div class="example-ip">192.168.1.100/26</div>
+                            <div class="example-desc">Exemple avec masque 255.255.255.192</div>
+                        </div>
+                        <div class="example-card" onclick="clearSubnetFields()">
+                            <div class="example-ip">Nettoyer</div>
+                            <div class="example-desc">Effacer tous les champs</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Résultats Sous-Réseaux</h2>
+                    <div id="subnet-results-container">
+                        <div style="text-align: center; padding: 3rem; color: #7f8c8d;">
+                            <i class="fas fa-network-wired" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Les résultats de sous-réseautage s'afficheront ici</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calculateur VLSM -->
+            <div class="tab-content" id="vlsm-calculator">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-sitemap"></i> Calculateur VLSM</h2>
+                    <p style="margin-bottom: 1.5rem; color: #7f8c8d;">
+                        Le VLSM (Variable Length Subnet Mask) permet de créer des sous-réseaux de tailles différentes
+                        pour optimiser l'utilisation des adresses IP.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="vlsm-network">Réseau de Base (CIDR)</label>
+                        <input type="text" id="vlsm-network" placeholder="Ex: 192.168.1.0/24" value="192.168.1.0/24">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sous-réseaux requis</label>
+                        <div id="vlsm-requirements">
+                            <div class="vlsm-subnet">
+                                <input type="text" class="vlsm-name" placeholder="Nom du sous-réseau" value="Serveurs">
+                                <input type="number" class="vlsm-hosts" placeholder="Nombre d'hôtes" value="50" min="1">
+                                <button class="btn btn-danger remove-vlsm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="add-vlsm" class="btn" style="margin-bottom: 1rem;">
+                        <i class="fas fa-plus"></i> Ajouter un Sous-Réseau
+                    </button>
+                    
+                    <button id="calculate-vlsm" class="btn btn-success btn-large">
+                        <i class="fas fa-bolt"></i> Calculer le Schéma VLSM
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-table"></i> Résultats VLSM</h2>
+                    <div id="vlsm-results-container">
+                        <div style="text-align: center; padding: 3rem; color: #7f8c8d;">
+                            <i class="fas fa-sitemap" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Le schéma VLSM s'affichera ici après calcul</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Outils -->
+            <div class="tab-content" id="tools">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-tools"></i> Outils de Conversion</h2>
+                    
+                    <div class="converter-tool">
+                        <h3><i class="fas fa-exchange-alt"></i> Convertisseur CIDR ↔ Masque</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CIDR vers Masque</label>
+                                <input type="number" id="cidr-to-mask" placeholder="CIDR (ex: 24)" min="0" max="32" value="24">
+                                <button class="btn" onclick="convertCIDRToMask()">Convertir</button>
+                                <div class="converter-result" id="cidr-to-mask-result"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Masque vers CIDR</label>
+                                <input type="text" id="mask-to-cidr" placeholder="Masque (ex: 255.255.255.0)" value="255.255.255.0">
+                                <button class="btn" onclick="convertMaskToCIDR()">Convertir</button>
+                                <div class="converter-result" id="mask-to-cidr-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="converter-tool">
+                        <h3><i class="fas fa-code"></i> Convertisseur IP Décimal ↔ Binaire</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Décimal vers Binaire</label>
+                                <input type="text" id="decimal-to-binary" placeholder="IP (ex: 192.168.1.1)" value="192.168.1.1">
+                                <button class="btn" onclick="convertDecimalToBinary()">Convertir</button>
+                                <div class="converter-result" id="decimal-to-binary-result"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Binaire vers Décimal</label>
+                                <input type="text" id="binary-to-decimal" placeholder="Binaire (ex: 11000000.10101000.00000001.00000001)" value="11000000.10101000.00000001.00000001">
+                                <button class="btn" onclick="convertBinaryToDecimal()">Convertir</button>
+                                <div class="converter-result" id="binary-to-decimal-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="converter-tool">
+                        <h3><i class="fas fa-mask"></i> Calculateur de Masque Générique</h3>
+                        <div class="form-group">
+                            <label>Masque de Sous-Réseau</label>
+                            <input type="text" id="wildcard-input" placeholder="Masque (ex: 255.255.255.0)" value="255.255.255.0">
+                            <button class="btn" onclick="calculateWildcard()">Calculer</button>
+                            <div class="converter-result" id="wildcard-result"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-table"></i> Table de Référence CIDR</h2>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>CIDR</th>
+                                <th>Masque</th>
+                                <th>Hôtes</th>
+                                <th>Bits Hôte</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>/24</td><td>255.255.255.0</td><td>254</td><td>8</td></tr>
+                            <tr><td>/25</td><td>255.255.255.128</td><td>126</td><td>7</td></tr>
+                            <tr><td>/26</td><td>255.255.255.192</td><td>62</td><td>6</td></tr>
+                            <tr><td>/27</td><td>255.255.255.224</td><td>30</td><td>5</td></tr>
+                            <tr><td>/28</td><td>255.255.255.240</td><td>14</td><td>4</td></tr>
+                            <tr><td>/29</td><td>255.255.255.248</td><td>6</td><td>3</td></tr>
+                            <tr><td>/30</td><td>255.255.255.252</td><td>2</td><td>2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><i class="fas fa-network-wired"></i> Calculateur Réseau IP Complet - Outil Pédagogique Professionnel</p>
+            <p>© 2024 - Tous les outils pour comprendre et calculer les réseaux IP</p>
+        </footer>
+    </div>
+
+    <script>
+        // ========== GESTION DES ONGLETS ==========
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ========== CALCULATEUR CIDR ==========
+        document.getElementById('calculate-cidr').addEventListener('click', calculateCIDR);
+        
+        function calculateCIDR() {
+            const cidrInput = document.getElementById('cidr-input').value.trim();
+            
+            if (!isValidCIDR(cidrInput)) {
+                showNotification('Format CIDR invalide. Utilisez: 192.168.1.1/24', 'error');
+                return;
+            }
+            
+            const [ip, cidr] = cidrInput.split('/');
+            const cidrValue = parseInt(cidr);
+            const results = performCIDRCalculation(ip, cidrValue);
+            
+            displayCIDRResults(results);
+            displayCIDRCalculationSteps(results);
+            
+            document.getElementById('cidr-results-placeholder').style.display = 'none';
+            document.getElementById('cidr-results-container').style.display = 'block';
+        }
+        
+        function performCIDRCalculation(ip, cidr) {
+            const subnetMask = cidrToMask(cidr);
+            const networkAddress = calculateNetworkAddress(ip, subnetMask);
+            const broadcastAddress = calculateBroadcastAddress(networkAddress, subnetMask);
+            const hostBits = 32 - cidr;
+            const totalAddresses = Math.pow(2, hostBits);
+            const usableHosts = totalAddresses - 2;
+            const firstHost = calculateFirstHost(networkAddress);
+            const lastHost = calculateLastHost(broadcastAddress);
+            
+            return {
+                ip,
+                cidr,
+                subnetMask,
+                networkAddress,
+                broadcastAddress,
+                hostBits,
+                totalAddresses,
+                usableHosts,
+                firstHost,
+                lastHost
+            };
+        }
+        
+        function displayCIDRResults(results) {
+            document.getElementById('network-address').textContent = results.networkAddress;
+            document.getElementById('broadcast-address').textContent = results.broadcastAddress;
+            document.getElementById('host-bits').textContent = results.hostBits;
+            document.getElementById('total-hosts').textContent = results.usableHosts;
+            document.getElementById('first-host').textContent = results.firstHost;
+            document.getElementById('last-host').textContent = results.lastHost;
+            
+            document.getElementById('binary-ip').textContent = `Adresse IP: ${results.ip} = ${ipToBinary(results.ip)}`;
+            document.getElementById('binary-mask').textContent = `Masque: ${results.subnetMask} = ${ipToBinary(results.subnetMask)}`;
+            document.getElementById('binary-network').textContent = `Réseau: ${results.networkAddress} = ${ipToBinary(results.networkAddress)}`;
+            document.getElementById('binary-broadcast').textContent = `Broadcast: ${results.broadcastAddress} = ${ipToBinary(results.broadcastAddress)}`;
+        }
+        
+        function displayCIDRCalculationSteps(results) {
+            const steps = `
+                <div class="calculation-steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <strong>Analyse du CIDR /${results.cidr}</strong><br>
+                        Masque décimal: ${results.subnetMask}<br>
+                        Bits réseau: ${results.cidr}, Bits hôte: ${results.hostBits}
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <strong>Calcul de l'adresse réseau</strong><br>
+                        ${results.ip} AND ${results.subnetMask} = <span class="highlight">${results.networkAddress}</span>
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <strong>Calcul de l'adresse broadcast</strong><br>
+                        ${results.networkAddress} OR ${calculateWildcardMask(results.subnetMask)} = <span class="highlight">${results.broadcastAddress}</span>
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <strong>Calcul des hôtes utilisables</strong><br>
+                        Bits hôte: ${results.hostBits} → 2<sup>${results.hostBits}</sup> = ${results.totalAddresses} adresses<br>
+                        Hôtes utilisables: ${results.totalAddresses} - 2 = <span class="highlight">${results.usableHosts}</span>
+                    </div>
+                    
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <strong>Plage d'adresses</strong><br>
+                        Premier hôte: ${results.networkAddress} + 1 = <span class="highlight">${results.firstHost}</span><br>
+                        Dernier hôte: ${results.broadcastAddress} - 1 = <span class="highlight">${results.lastHost}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cidr-calculation-steps').innerHTML = steps;
+        }
+        
+        function loadCIDRExample(cidr) {
+            document.getElementById('cidr-input').value = cidr;
+            calculateCIDR();
+            showNotification(`Exemple ${cidr} chargé`, 'success');
+        }
+        
+        function clearCIDRFields() {
+            document.getElementById('cidr-input').value = '';
+            document.getElementById('cidr-results-container').style.display = 'none';
+            document.getElementById('cidr-results-placeholder').style.display = 'block';
+            document.getElementById('cidr-calculation-steps').innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                    <i class="fas fa-cogs" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Les étapes de calcul s'afficheront ici</p>
+                </div>
+            `;
+            showNotification('Champs CIDR nettoyés', 'info');
+        }
+
+        // ========== CALCULATEUR SOUS-RÉSEAUX ==========
+        document.getElementById('calculate-subnet').addEventListener('click', calculateSubnet);
+        
+        function calculateSubnet() {
+            const ip = document.getElementById('ip-address').value.trim();
+            const initialMask = document.getElementById('initial-mask').value.trim();
+            const newMask = document.getElementById('new-mask').value.trim();
+            
+            if (!isValidIP(ip) || !isValidMask(initialMask) || !isValidMask(newMask)) {
+                showNotification('Veuillez vérifier les adresses IP et masques saisis', 'error');
+                return;
+            }
+            
+            const results = performSubnetCalculation(ip, initialMask, newMask);
+            displaySubnetResults(results);
+        }
+        
+        function performSubnetCalculation(ip, initialMask, newMask) {
+            const initialCIDR = maskToCIDR(initialMask);
+            const newCIDR = maskToCIDR(newMask);
+            const subnetBits = newCIDR - initialCIDR;
+            const subnetCount = Math.pow(2, subnetBits);
+            const hostBits = 32 - newCIDR;
+            const hostsPerSubnet = Math.pow(2, hostBits) - 2;
+            const subnetAddress = calculateNetworkAddress(ip, newMask);
+            const firstHost = calculateFirstHost(subnetAddress);
+            const broadcastAddress = calculateBroadcastAddress(subnetAddress, newMask);
+            const lastHost = calculateLastHost(broadcastAddress);
+            
+            return {
+                ip, initialMask, newMask,
+                initialCIDR, newCIDR,
+                subnetBits, subnetCount,
+                hostBits, hostsPerSubnet,
+                subnetAddress, firstHost,
+                broadcastAddress, lastHost
+            };
+        }
+        
+        function displaySubnetResults(results) {
+            const html = `
+                <div class="results-grid">
+                    <div class="result-card network">
+                        <div class="result-label">Adresse de Sous-Réseau</div>
+                        <div class="result-value">${results.subnetAddress}</div>
+                        <div class="result-label">Masque: ${results.newMask}</div>
+                    </div>
+                    
+                    <div class="result-card subnet">
+                        <div class="result-label">Bits de Sous-Réseau</div>
+                        <div class="result-value">${results.subnetBits}</div>
+                        <div class="result-label">Sous-réseaux: ${results.subnetCount}</div>
+                    </div>
+                    
+                    <div class="result-card host">
+                        <div class="result-label">Bits d'Hôte</div>
+                        <div class="result-value">${results.hostBits}</div>
+                        <div class="result-label">Hôtes/sous-réseau: ${results.hostsPerSubnet}</div>
+                    </div>
+                    
+                    <div class="result-card broadcast">
+                        <div class="result-label">Adresse Broadcast</div>
+                        <div class="result-value">${results.broadcastAddress}</div>
+                        <div class="result-label">Dernière adresse</div>
+                    </div>
+                </div>
+                
+                <div class="ip-display">
+                    Plage utilisable: ${results.firstHost} - ${results.lastHost}
+                </div>
+                
+                <div class="calculation-steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        Bits sous-réseau: /${results.newCIDR} - /${results.initialCIDR} = <span class="highlight">${results.subnetBits} bits</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        Sous-réseaux créés: 2<sup>${results.subnetBits}</sup> = <span class="highlight">${results.subnetCount}</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        Hôtes par sous-réseau: 2<sup>${results.hostBits}</sup> - 2 = <span class="highlight">${results.hostsPerSubnet}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('subnet-results-container').innerHTML = html;
+        }
+        
+        function loadSubnetExample(ip, initialMask, newMask) {
+            document.getElementById('ip-address').value = ip;
+            document.getElementById('initial-mask').value = initialMask;
+            document.getElementById('new-mask').value = newMask;
+            calculateSubnet();
+            showNotification('Exemple de sous-réseau chargé', 'success');
+        }
+        
+        function clearSubnetFields() {
+            document.getElementById('ip-address').value = '';
+            document.getElementById('initial-mask').value = '';
+            document.getElementById('new-mask').value = '';
+            document.getElementById('subnet-results-container').innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #7f8c8d;">
+                    <i class="fas fa-network-wired" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Les résultats de sous-réseautage s'afficheront ici</p>
+                </div>
+            `;
+            showNotification('Champs sous-réseaux nettoyés', 'info');
+        }
+
+        // ========== CALCULATEUR VLSM ==========
+        document.getElementById('add-vlsm').addEventListener('click', function() {
+            const container = document.getElementById('vlsm-requirements');
+            const newSubnet = document.createElement('div');
+            newSubnet.className = 'vlsm-subnet';
+            newSubnet.innerHTML = `
+                <input type="text" class="vlsm-name" placeholder="Nom du sous-réseau" value="Nouveau Sous-Réseau">
+                <input type="number" class="vlsm-hosts" placeholder="Nombre d'hôtes" value="10" min="1">
+                <button class="btn btn-danger remove-vlsm"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(newSubnet);
+            
+            // Ajouter l'événement de suppression
+            newSubnet.querySelector('.remove-vlsm').addEventListener('click', function() {
+                if (document.querySelectorAll('.vlsm-subnet').length > 1) {
+                    container.removeChild(newSubnet);
+                } else {
+                    showNotification('Vous devez avoir au moins un sous-réseau', 'warning');
+                }
+            });
+        });
+        
+        // Événement de suppression pour le premier sous-réseau
+        document.querySelector('.remove-vlsm').addEventListener('click', function() {
+            const container = document.getElementById('vlsm-requirements');
+            if (container.children.length > 1) {
+                container.removeChild(this.parentElement);
+            } else {
+                showNotification('Vous devez avoir au moins un sous-réseau', 'warning');
+            }
+        });
+        
+        document.getElementById('calculate-vlsm').addEventListener('click', calculateVLSM);
+        
+        function calculateVLSM() {
+            const network = document.getElementById('vlsm-network').value.trim();
+            
+            if (!isValidCIDR(network)) {
+                showNotification('Réseau de base invalide', 'error');
+                return;
+            }
+            
+            // Collecter les exigences
+            const requirements = [];
+            const subnetElements = document.querySelectorAll('.vlsm-subnet');
+            
+            subnetElements.forEach(element => {
+                const name = element.querySelector('.vlsm-name').value || 'Sans nom';
+                const hosts = parseInt(element.querySelector('.vlsm-hosts').value) || 0;
+                
+                if (hosts > 0) {
+                    requirements.push({ name, hosts });
+                }
+            });
+            
+            if (requirements.length === 0) {
+                showNotification('Ajoutez au moins un sous-réseau avec des hôtes', 'error');
+                return;
+            }
+            
+            // Trier par nombre d'hôtes décroissant
+            requirements.sort((a, b) => b.hosts - a.hosts);
+            
+            // Calculer le VLSM
+            const results = performVLSMCalculation(network, requirements);
+            displayVLSMResults(results);
+        }
+        
+        function performVLSMCalculation(network, requirements) {
+            const [baseIP, cidr] = network.split('/');
+            const baseCIDR = parseInt(cidr);
+            let currentNetwork = ipToDecimal(baseIP);
+            
+            const results = [];
+            
+            for (const req of requirements) {
+                const hostsNeeded = req.hosts;
+                const subnetSize = calculateSubnetSize(hostsNeeded);
+                const hostsAvailable = Math.pow(2, 32 - subnetSize) - 2;
+                
+                const networkAddress = decimalToIp(currentNetwork);
+                const firstHost = decimalToIp(currentNetwork + 1);
+                const lastHost = decimalToIp(currentNetwork + hostsAvailable);
+                const broadcast = decimalToIp(currentNetwork + hostsAvailable + 1);
+                
+                results.push({
+                    name: req.name,
+                    network: networkAddress,
+                    cidr: `/${subnetSize}`,
+                    mask: cidrToMask(subnetSize),
+                    firstHost: firstHost,
+                    lastHost: lastHost,
+                    broadcast: broadcast,
+                    hostsRequired: hostsNeeded,
+                    hostsAvailable: hostsAvailable,
+                    efficiency: ((hostsNeeded / hostsAvailable) * 100).toFixed(1)
+                });
+                
+                // Passer au réseau suivant
+                currentNetwork += hostsAvailable + 2;
+            }
+            
+            return results;
+        }
+        
+        function displayVLSMResults(results) {
+            let html = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Sous-réseau</th>
+                            <th>Réseau</th>
+                            <th>Masque</th>
+                            <th>Plage Utilisable</th>
+                            <th>Hôtes (Utilisés/Disponibles)</th>
+                            <th>Efficacité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            results.forEach(result => {
+                html += `
+                    <tr>
+                        <td><strong>${result.name}</strong></td>
+                        <td>${result.network}${result.cidr}</td>
+                        <td>${result.mask}</td>
+                        <td>${result.firstHost} - ${result.lastHost}</td>
+                        <td>${result.hostsRequired} / ${result.hostsAvailable}</td>
+                        <td>${result.efficiency}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `</tbody></table>`;
+            
+            document.getElementById('vlsm-results-container').innerHTML = html;
+        }
+
+        // ========== OUTILS DE CONVERSION ==========
+        function convertCIDRToMask() {
+            const cidr = parseInt(document.getElementById('cidr-to-mask').value);
+            if (cidr >= 0 && cidr <= 32) {
+                const mask = cidrToMask(cidr);
+                document.getElementById('cidr-to-mask-result').textContent = `CIDR /${cidr} = ${mask}`;
+            } else {
+                document.getElementById('cidr-to-mask-result').textContent = 'CIDR doit être entre 0 et 32';
+            }
+        }
+        
+        function convertMaskToCIDR() {
+            const mask = document.getElementById('mask-to-cidr').value;
+            if (isValidMask(mask)) {
+                const cidr = maskToCIDR(mask);
+                document.getElementById('mask-to-cidr-result').textContent = `${mask} = CIDR /${cidr}`;
+            } else {
+                document.getElementById('mask-to-cidr-result').textContent = 'Masque invalide';
+            }
+        }
+        
+        function convertDecimalToBinary() {
+            const ip = document.getElementById('decimal-to-binary').value;
+            if (isValidIP(ip)) {
+                const binary = ipToBinary(ip);
+                document.getElementById('decimal-to-binary-result').textContent = `${ip} = ${binary}`;
+            } else {
+                document.getElementById('decimal-to-binary-result').textContent = 'Adresse IP invalide';
+            }
+        }
+        
+        function convertBinaryToDecimal() {
+            const binary = document.getElementById('binary-to-decimal').value;
+            const ip = binaryToIp(binary);
+            if (ip) {
+                document.getElementById('binary-to-decimal-result').textContent = `${binary} = ${ip}`;
+            } else {
+                document.getElementById('binary-to-decimal-result').textContent = 'Format binaire invalide';
+            }
+        }
+        
+        function calculateWildcard() {
+            const mask = document.getElementById('wildcard-input').value;
+            if (isValidMask(mask)) {
+                const wildcard = calculateWildcardMask(mask);
+                document.getElementById('wildcard-result').textContent = `Masque ${mask} = Wildcard ${wildcard}`;
+            } else {
+                document.getElementById('wildcard-result').textContent = 'Masque invalide';
+            }
+        }
+
+        // ========== FONCTIONS UTILITAIRES ==========
+        function isValidCIDR(cidr) {
+            const cidrRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$/;
+            if (!cidrRegex.test(cidr)) return false;
+            const [ip, prefix] = cidr.split('/');
+            return isValidIP(ip);
+        }
+        
+        function isValidIP(ip) {
+            const ipRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$/;
+            if (!ipRegex.test(ip)) return false;
+            const octets = ip.split('.');
+            for (let i = 0; i < 4; i++) {
+                const octet = parseInt(octets[i]);
+                if (octet < 0 || octet > 255) return false;
+            }
+            return true;
+        }
+        
+        function isValidMask(mask) {
+            const validMasks = [
+                '255.255.255.255', '255.255.255.254', '255.255.255.252', '255.255.255.248',
+                '255.255.255.240', '255.255.255.224', '255.255.255.192', '255.255.255.128',
+                '255.255.255.0', '255.255.254.0', '255.255.252.0', '255.255.248.0',
+                '255.255.240.0', '255.255.224.0', '255.255.192.0', '255.255.128.0',
+                '255.255.0.0', '255.254.0.0', '255.252.0.0', '255.248.0.0',
+                '255.240.0.0', '255.224.0.0', '255.192.0.0', '255.128.0.0',
+                '255.0.0.0'
+            ];
+            return validMasks.includes(mask);
+        }
+        
+        function cidrToMask(cidr) {
+            const mask = [];
+            for (let i = 0; i < 4; i++) {
+                const shift = Math.min(8, cidr - i * 8);
+                mask.push(shift > 0 ? 256 - Math.pow(2, 8 - shift) : 0);
+            }
+            return mask.join('.');
+        }
+        
+        function ipToBinary(ip) {
+            const octets = ip.split('.');
+            return octets.map(octet => {
+                const binary = parseInt(octet).toString(2);
+                return '0'.repeat(8 - binary.length) + binary;
+            }).join('.');
+        }
+        
+        function binaryToIp(binary) {
+            try {
+                const octets = binary.split('.');
+                if (octets.length !== 4) return null;
+                
+                const ip = octets.map(octet => {
+                    if (octet.length !== 8) return null;
+                    return parseInt(octet, 2);
+                });
+                
+                return ip.includes(null) ? null : ip.join('.');
+            } catch {
+                return null;
+            }
+        }
+        
+        function calculateNetworkAddress(ip, mask) {
+            const ipOctets = ip.split('.').map(octet => parseInt(octet));
+            const maskOctets = mask.split('.').map(octet => parseInt(octet));
+            const networkOctets = [];
+            for (let i = 0; i < 4; i++) {
+                networkOctets.push(ipOctets[i] & maskOctets[i]);
+            }
+            return networkOctets.join('.');
+        }
+        
+        function calculateBroadcastAddress(networkAddress, mask) {
+            const networkOctets = networkAddress.split('.').map(octet => parseInt(octet));
+            const maskOctets = mask.split('.').map(octet => parseInt(octet));
+            const broadcastOctets = [];
+            for (let i = 0; i < 4; i++) {
+                broadcastOctets.push(networkOctets[i] | (255 - maskOctets[i]));
+            }
+            return broadcastOctets.join('.');
+        }
+        
+        function calculateFirstHost(networkAddress) {
+            const octets = networkAddress.split('.').map(octet => parseInt(octet));
+            octets[3] += 1;
+            for (let i = 3; i >= 0; i--) {
+                if (octets[i] > 255) {
+                    octets[i] = 0;
+                    if (i > 0) octets[i-1] += 1;
+                }
+            }
+            return octets.join('.');
+        }
+        
+        function calculateLastHost(broadcastAddress) {
+            const octets = broadcastAddress.split('.').map(octet => parseInt(octet));
+            octets[3] -= 1;
+            for (let i = 3; i >= 0; i--) {
+                if (octets[i] < 0) {
+                    octets[i] = 255;
+                    if (i > 0) octets[i-1] -= 1;
+                }
+            }
+            return octets.join('.');
+        }
+        
+        function calculateWildcardMask(mask) {
+            const octets = mask.split('.');
+            return octets.map(octet => 255 - parseInt(octet)).join('.');
+        }
+        
+        function maskToCIDR(mask) {
+            const octets = mask.split('.');
+            let cidr = 0;
+            for (const octet of octets) {
+                cidr += (parseInt(octet).toString(2).match(/1/g) || []).length;
+            }
+            return cidr;
+        }
+        
+        function calculateSubnetSize(hostsNeeded) {
+            const bitsForHosts = Math.ceil(Math.log2(hostsNeeded + 2));
+            return 32 - bitsForHosts;
+        }
+        
+        function ipToDecimal(ip) {
+            const octets = ip.split('.').map(octet => parseInt(octet));
+            return (octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3];
+        }
+        
+        function decimalToIp(decimal) {
+            return [
+                (decimal >>> 24) & 255,
+                (decimal >>> 16) & 255,
+                (decimal >>> 8) & 255,
+                decimal & 255
+            ].join('.');
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                color: white;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            const colors = {
+                success: '#27ae60',
+                error: '#e74c3c',
+                info: '#3498db',
+                warning: '#f39c12'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+        
+        // Animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialisation
+        window.addEventListener('load', function() {
+            calculateCIDR();
+            showNotification('Calculateur réseau IP complet prêt!', 'success');
+        });
+    </script>
+</body>
+</html>
